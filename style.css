@@ -16,9 +16,9 @@
 
   --accent: #6ea8fe;
   --portfolio: #a78bfa;
+  --adsfeed: #f6c453;
 
   --success: #4ade80;
-  --danger: #f87171;
 
   --window-shadow:
     0 25px 80px rgba(0, 0, 0, 0.55);
@@ -257,7 +257,7 @@ button.card:hover {
 }
 
 
-/* PORTFOLIO CARD */
+/* PORTFOLIO */
 
 .portfolio-card {
   border-color: #353044;
@@ -276,7 +276,26 @@ button.card:hover {
 }
 
 
-/* CARD ARROW */
+/* ADS FEED */
+
+.adsfeed-card {
+  border-color: #3c3828;
+}
+
+.adsfeed-card .card-label {
+  color: var(--adsfeed);
+}
+
+.adsfeed-card .arrow {
+  color: var(--adsfeed);
+}
+
+.adsfeed-card:hover {
+  border-color: var(--adsfeed) !important;
+}
+
+
+/* ARROW */
 
 .arrow {
   position: absolute;
@@ -430,7 +449,7 @@ footer {
 
   border-radius: 50%;
 
-  background: var(--portfolio);
+  background: var(--accent);
 }
 
 .window-title {
@@ -526,7 +545,7 @@ footer {
 }
 
 
-/* BODY WHILE WINDOW IS OPEN */
+/* BODY WINDOW STATE */
 
 body.window-open {
   overflow: hidden;
@@ -553,10 +572,6 @@ body.window-open {
     padding: 8px;
   }
 
-  .nav-button .fullscreen-icon {
-    margin: 0;
-  }
-
   .dashboard,
   footer {
     width: 90%;
@@ -580,6 +595,7 @@ body.window-open {
 
     border-radius: 9px;
   }
+
 }
 
 
