@@ -21,6 +21,12 @@ const windowCards = document.querySelectorAll(
 );
 
 
+/* FULLSCREEN STATE */
+
+let restoreDashboardFullscreen = false;
+let restoringDashboardFullscreen = false;
+
+
 /* DASHBOARD FULLSCREEN */
 
 async function toggleDashboardFullscreen() {
@@ -46,7 +52,6 @@ dashboardFullscreenButton.addEventListener(
 
 function openWindow(title, url) {
   windowTitle.textContent = title;
-
   windowFrame.src = url;
 
   windowBackdrop.classList.add("open");
@@ -59,10 +64,10 @@ function openWindow(title, url) {
 /* CLOSE WINDOW */
 
 async function closeWindow() {
-  if (
-    document.fullscreenElement === appWindow
-  ) {
+  if (document.fullscreenElement === appWindow) {
     try {
+      restoreDashboardFullscreen = false;
+
       await document.exitFullscreen();
     } catch (error) {
       console.error("Failed to exit fullscreen:", error);
@@ -94,18 +99,48 @@ windowCards.forEach((card) => {
 
 async function toggleWindowFullscreen() {
   try {
+
+    /*
+     * EXIT WINDOW FULLSCREEN
+     */
+
     if (document.fullscreenElement === appWindow) {
       await document.exitFullscreen();
+
       return;
     }
+
+
+    /*
+     * REMEMBER IF DASHBOARD
+     * WAS ALREADY FULLSCREEN
+     */
+
+    restoreDashboardFullscreen =
+      document.fullscreenElement === document.documentElement;
+
+
+    /*
+     * EXIT DASHBOARD FULLSCREEN
+     * BEFORE OPENING WINDOW FULLSCREEN
+     */
 
     if (document.fullscreenElement) {
       await document.exitFullscreen();
     }
 
+
+    /*
+     * ENTER WINDOW FULLSCREEN
+     */
+
     await appWindow.requestFullscreen();
+
   } catch (error) {
-    console.error("Window fullscreen request failed:", error);
+    console.error(
+      "Window fullscreen request failed:",
+      error
+    );
   }
 }
 
@@ -145,31 +180,82 @@ document.addEventListener("keydown", (event) => {
 });
 
 
-/* FULLSCREEN STATE */
+/* FULLSCREEN CHANGE */
 
-document.addEventListener("fullscreenchange", () => {
-  const dashboardIsFullscreen =
-    document.fullscreenElement === document.documentElement;
+document.addEventListener(
+  "fullscreenchange",
+  async () => {
 
-  const windowIsFullscreen =
-    document.fullscreenElement === appWindow;
+    const dashboardIsFullscreen =
+      document.fullscreenElement === document.documentElement;
 
-  dashboardFullscreenButton.innerHTML = dashboardIsFullscreen
-    ? '<span class="fullscreen-icon">⛶</span> Exit Fullscreen'
-    : '<span class="fullscreen-icon">⛶</span> Fullscreen';
+    const windowIsFullscreen =
+      document.fullscreenElement === appWindow;
 
-  windowFullscreenButton.textContent =
-    windowIsFullscreen ? "↙" : "⛶";
 
-  windowFullscreenButton.title =
-    windowIsFullscreen
-      ? "Exit fullscreen"
-      : "Fullscreen";
+    /*
+     * RESTORE DASHBOARD FULLSCREEN
+     *
+     * If the window was opened while the dashboard
+     * was fullscreen, restore dashboard fullscreen
+     * after leaving window fullscreen.
+     */
 
-  windowFullscreenButton.setAttribute(
-    "aria-label",
-    windowIsFullscreen
-      ? "Exit window fullscreen"
-      : "Toggle window fullscreen"
-  );
-});
+    if (
+      !document.fullscreenElement &&
+      restoreDashboardFullscreen &&
+      !restoringDashboardFullscreen
+    ) {
+      try {
+        restoringDashboardFullscreen = true;
+
+        await document.documentElement.requestFullscreen();
+
+        restoreDashboardFullscreen = false;
+      } catch (error) {
+        console.error(
+          "Failed to restore dashboard fullscreen:",
+          error
+        );
+      } finally {
+        restoringDashboardFullscreen = false;
+      }
+    }
+
+
+    /*
+     * DASHBOARD BUTTON
+     */
+
+    const dashboardActive =
+      document.fullscreenElement === document.documentElement;
+
+    dashboardFullscreenButton.innerHTML =
+      dashboardActive
+        ? '<span class="fullscreen-icon">⛶</span> Exit Fullscreen'
+        : '<span class="fullscreen-icon">⛶</span> Fullscreen';
+
+
+    /*
+     * WINDOW BUTTON
+     */
+
+    const windowActive =
+      document.fullscreenElement === appWindow;
+
+    windowFullscreenButton.textContent =
+      windowActive ? "↙" : "⛶";
+
+    windowFullscreenButton.title =
+      windowActive
+        ? "Exit fullscreen"
+        : "Fullscreen";
+
+    windowFullscreenButton.setAttribute(
+      "aria-label",
+      windowActive
+        ? "Exit window fullscreen"
+        : "Toggle window fullscreen"
+    );
+  }
+);
